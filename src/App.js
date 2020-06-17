@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
+
 import api from './services/api';
 
-import './App.css';
+import './styles.css';
 
 function App() {
   const [repositories, setRepositories] = useState([]);
-  const [title, setTitle] = useState('');
 
   useEffect(() => {
     api.get('/repositories').then(response => {
@@ -13,59 +13,42 @@ function App() {
     });
   }, []);
 
-  async function handleAddRepository(event) {
-    event.preventDefault();
+  async function handleAddRepository() {
+    const response = await api.post('/repositories', {
+      title: 'Front-end com ReactJS',
+      owner: 'Bernardo Generoso',
+      url: 'https://github.com/bernardogeneroso',
+    });
 
-    if (!title) {
-      document.getElementById('title').focus();
-    } else {
-      const response = await api.post('/repositories', { title });
-      setRepositories([...repositories, response.data]);
-      setTitle('');
-    }
+    setRepositories([...repositories, response.data]);
   }
 
   async function handleRemoveRepository(id) {
     const response = await api.delete(`/repositories/${id}`);
 
     if (response.data.message === 'Success') {
-      const repositoriesUpdate = repositories.filter(
+      const repository = repositories.filter(
         repository => repository.id !== id,
       );
 
-      setRepositories(repositoriesUpdate);
+      setRepositories(repository);
     }
   }
 
   return (
     <div>
-      <h1>CRUD Repositories</h1>
-      <div className="repositoriesContainer">
+      <ul data-testid="repository-list">
         {repositories.map(repository => (
-          <div key={repository.id} className="repositoryContainer">
-            <h3>{repository.title}</h3>
+          <li key={repository.id}>
+            {repository.title}
             <button onClick={() => handleRemoveRepository(repository.id)}>
-              Remove repository
+              Remove
             </button>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
 
-      <div className="containerFormRepository">
-        <form>
-          <input
-            type="text"
-            name="title"
-            id="title"
-            onChange={event => setTitle(event.target.value)}
-            value={title}
-          />
-          <br />
-          <button onClick={event => handleAddRepository(event)}>
-            Create repository
-          </button>
-        </form>
-      </div>
+      <button onClick={handleAddRepository}>Create</button>
     </div>
   );
 }
