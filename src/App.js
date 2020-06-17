@@ -13,29 +13,28 @@ function App() {
     });
   }, []);
 
-  function handleAddRepository(event) {
+  async function handleAddRepository(event) {
     event.preventDefault();
 
     if (!title) {
       document.getElementById('title').focus();
     } else {
-      api.post('/repositories', { title }).then(response => {
-        setRepositories([...repositories, response.data]);
-        setTitle('');
-      });
+      const response = await api.post('/repositories', { title });
+      setRepositories([...repositories, response.data]);
+      setTitle('');
     }
   }
 
-  function handleRemoveRepository(id) {
-    api.delete(`/repositories/${id}`).then(response => {
-      if (response.data.message === 'Success') {
-        const repositoriesUpdate = repositories.filter(
-          repository => repository.id !== id,
-        );
+  async function handleRemoveRepository(id) {
+    const response = await api.delete(`/repositories/${id}`);
 
-        setRepositories(repositoriesUpdate);
-      }
-    });
+    if (response.data.message === 'Success') {
+      const repositoriesUpdate = repositories.filter(
+        repository => repository.id !== id,
+      );
+
+      setRepositories(repositoriesUpdate);
+    }
   }
 
   return (
